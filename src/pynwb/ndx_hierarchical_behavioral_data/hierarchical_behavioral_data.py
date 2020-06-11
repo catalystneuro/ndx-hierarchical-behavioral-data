@@ -1,6 +1,5 @@
 from ndx_icephys_meta.icephys import HierarchicalDynamicTableMixin
 from pynwb.epoch import TimeIntervals
-from pynwb.core import DynamicTable
 from pynwb.base import TimeSeries
 from pynwb import register_class
 from hdmf.utils import docval, get_docval, popargs, call_docval_func
@@ -12,18 +11,16 @@ class HierarchicalBehavioralTable(TimeIntervals, HierarchicalDynamicTableMixin):
     """
     A table to store different phonemes
     """
-    __columns__ = (
+    __columns__ = tuple(list(TimeIntervals.__columns__) + [
         {'name': 'label',
          'description': 'Column for each label.',
          'required': True},
-        {'name': 'start_time', 'description': 'Start time of interval, in seconds', 'required': True},
-        {'name': 'stop_time', 'description': 'Stop time of interval, in seconds', 'required': True},
         {'name': 'next_tier',
          'description': 'References to the next tier.',
          'required': True,
          'table': True,
          'index': True}
-    )
+    ])
 
     @docval({'name': 'name', 'type': str, 'doc': 'name of table.'},
             {'name': 'description', 'type': str, 'doc': 'description of table.'},

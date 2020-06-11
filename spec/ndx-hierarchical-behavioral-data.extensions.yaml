@@ -1,22 +1,14 @@
 groups:
-- data_type_def: HierarchicalBehavioralTable
-  data_type_inc: TimeIntervals
+- neurodata_type_def: HierarchicalBehavioralTable
+  neurodata_type_inc: TimeIntervals
   doc: DynamicTable that holds hierarchical behavioral information.
   datasets:
   - name: label
-    data_type_inc: VectorData
+    neurodata_type_inc: VectorData
     dtype: text
     doc: The label associated with each item
-  - name: start_time
-    data_type_inc: VectorData
-    dtype: float
-    doc: start time of this action in seconds past timestamps_reference_time
-  - name: stop_time
-    data_type_inc: VectorData
-    dtype: float
-    doc: stop time of this action
   - name: next_tier
-    data_type_inc: DynamicTableRegion
+    neurodata_type_inc: DynamicTableRegion
     doc: reference to the next tier
     attributes:
     - name: table
@@ -25,5 +17,5 @@ groups:
         reftype: object
       doc: reference to the next level
   - name: next_tier_index
-    data_type_inc: VectorIndex
+    neurodata_type_inc: VectorIndex
     doc: Index dataset for next tier.

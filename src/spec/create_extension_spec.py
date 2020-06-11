@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os.path
-from hdmf.spec import GroupSpec, RefSpec, NamespaceBuilder, export_spec
+from hdmf.spec import RefSpec, NamespaceBuilder, export_spec
+
+from pynwb.spec import NWBGroupSpec
 
 
 def main():
@@ -25,33 +27,21 @@ def main():
     ns_builder.include_type('DynamicTableRegion', namespace='core')
     ns_builder.include_type('VectorData', namespace='core')
 
-    behav_table = GroupSpec(
-        data_type_def='HierarchicalBehavioralTable',
-        data_type_inc='TimeIntervals',
+    behav_table = NWBGroupSpec(
+        neurodata_type_def='HierarchicalBehavioralTable',
+        neurodata_type_inc='TimeIntervals',
         doc='DynamicTable that holds hierarchical behavioral information.')
 
     behav_table.add_dataset(
         name='label',
-        data_type_inc='VectorData',
+        neurodata_type_inc='VectorData',
         doc='The label associated with each item',
         dtype='text'
     )
-    behav_table.add_dataset(
-        name='start_time',
-        data_type_inc='VectorData',
-        doc='start time of this action in seconds past timestamps_reference_time',
-        dtype='float'
-    )
 
-    behav_table.add_dataset(
-        name='stop_time',
-        data_type_inc='VectorData',
-        doc='stop time of this action',
-        dtype='float'
-    )
     next_tier = behav_table.add_dataset(
         name='next_tier',
-        data_type_inc='DynamicTableRegion',
+        neurodata_type_inc='DynamicTableRegion',
         doc='reference to the next tier',
     )
     next_tier.add_attribute(
@@ -62,7 +52,7 @@ def main():
     )
     behav_table.add_dataset(
         name='next_tier_index',
-        data_type_inc='VectorIndex',
+        neurodata_type_inc='VectorIndex',
         doc='Index dataset for next tier.',
     )
 

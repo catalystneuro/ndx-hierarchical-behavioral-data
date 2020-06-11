@@ -1,3 +1,8 @@
+import datetime
+
+
+from pynwb import NWBHDF5IO, NWBFile
+
 from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
 
 for i, p in enumerate('abcdefghijkl'):
@@ -13,3 +18,17 @@ words.add_interval(label='G-L', next_tier=[2, 3])
 
 print(words.to_denormalized_dataframe())
 print(words.to_hierarchical_dataframe())
+
+
+nwbfile = NWBFile(
+            session_description='session_description',
+            identifier='identifier',
+            session_start_time=datetime.datetime.now(datetime.timezone.utc))
+
+mod = nwbfile.create_processing_module('test_mod', 'test_mod')
+
+mod.add(phonemes)
+mod.add(syllables)
+
+with NWBHDF5IO('test.nwb', mode='w') as io:
+    io.write(nwbfile)
