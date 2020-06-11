@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os.path
-
-from pynwb.spec import NWBNamespaceBuilder, export_spec, NWBGroupSpec, NWBAttributeSpec
-# TODO: import the following spec classes as needed
-# from pynwb.spec import NWBDatasetSpec, NWBLinkSpec, NWBDtypeSpec, NWBRefSpec
+from hdmf.spec import GroupSpec, RefSpec, NamespaceBuilder, export_spec
 
 
 def main():
-    # these arguments were auto-generated from your cookiecutter inputs
-    ns_builder = NWBNamespaceBuilder(
-        doc="""NWB extensions for storing hierarchical behavioral data""",
+    ns_builder = NamespaceBuilder(
+        doc="""HDMF extensions for storing hierarchical behavioral data""",
         name="""ndx-hierarchical-behavioral-data""",
         version="""0.1.0""",
         author=list(map(str.strip, """Ben Dichter""".split(','))),
@@ -25,33 +21,52 @@ def main():
     # the extension should be included, i.e., the neurodata_type and its parent
     # type and its parent type and so on. this will be addressed in a future
     # release of HDMF.
-    ns_builder.include_type('ElectricalSeries', namespace='core')
-    ns_builder.include_type('TimeSeries', namespace='core')
-    ns_builder.include_type('NWBDataInterface', namespace='core')
-    ns_builder.include_type('NWBContainer', namespace='core')
-    ns_builder.include_type('DynamicTableRegion', namespace='hdmf-common')
-    ns_builder.include_type('VectorData', namespace='hdmf-common')
-    ns_builder.include_type('Data', namespace='hdmf-common')
+    ns_builder.include_type('TimeIntervals', namespace='core')
+    ns_builder.include_type('DynamicTableRegion', namespace='core')
+    ns_builder.include_type('VectorData', namespace='core')
 
-    # TODO: define your new data types
-    # see https://pynwb.readthedocs.io/en/latest/extensions.html#extending-nwb
-    # for more information
-    tetrode_series = NWBGroupSpec(
-        neurodata_type_def='TetrodeSeries',
-        neurodata_type_inc='ElectricalSeries',
-        doc=('An extension of ElectricalSeries to include the tetrode ID for '
-             'each time series.'),
-        attributes=[
-            NWBAttributeSpec(
-                name='trode_id',
-                doc='The tetrode ID.',
-                dtype='int32'
-            )
-        ],
+    behav_table = GroupSpec(
+        data_type_def='HierarchicalBehavioralTable',
+        data_type_inc='TimeIntervals',
+        doc='DynamicTable that holds hierarchical behavioral information.')
+
+    behav_table.add_dataset(
+        name='label',
+        data_type_inc='VectorData',
+        doc='The label associated with each item',
+        dtype='text'
+    )
+    behav_table.add_dataset(
+        name='start_time',
+        data_type_inc='VectorData',
+        doc='start time of this action in seconds past timestamps_reference_time',
+        dtype='float'
     )
 
-    # TODO: add all of your new data types to this list
-    new_data_types = [tetrode_series]
+    behav_table.add_dataset(
+        name='stop_time',
+        data_type_inc='VectorData',
+        doc='stop time of this action',
+        dtype='float'
+    )
+    next_tier = behav_table.add_dataset(
+        name='next_tier',
+        data_type_inc='DynamicTableRegion',
+        doc='reference to the next tier',
+    )
+    next_tier.add_attribute(
+        name='table',
+        dtype=RefSpec(target_type='TimeIntervals',
+                      reftype='object'),
+        doc='reference to the next level'
+    )
+    behav_table.add_dataset(
+        name='next_tier_index',
+        data_type_inc='VectorIndex',
+        doc='Index dataset for next tier.',
+    )
+
+    new_data_types = [behav_table]
 
     # export the spec to yaml files in the spec folder
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'spec'))

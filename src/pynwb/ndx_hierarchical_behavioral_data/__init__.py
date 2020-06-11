@@ -21,6 +21,4 @@ if not os.path.exists(ndx_hierarchical_behavioral_data_specpath):
 # Load the namespace
 load_namespaces(ndx_hierarchical_behavioral_data_specpath)
 
-# TODO: import your classes here or define your class using get_class to make
-# them accessible at the package level
-TetrodeSeries = get_class('TetrodeSeries', 'ndx-hierarchical-behavioral-data')
+from .hierarchical_behavioral_data import *
