@@ -28,7 +28,7 @@ setup_args = {
     'long_description_content_type': readme_type,
     'author': 'Ben Dichter',
     'author_email': 'ben.dichter@catalystneuro.com',
-    'url': '',
+    'url': 'https://github.com/catalystneuro/ndx-hierarchical-behavioral-data',
     'license': 'BSD 3-Clause',
     'install_requires': [
         'pynwb>=1.1.2'
