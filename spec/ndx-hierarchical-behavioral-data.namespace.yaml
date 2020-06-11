@@ -1,0 +1,21 @@
+namespaces:
+- author:
+  - Ben Dichter
+  contact:
+  - ben.dichter@catalystneuro.com
+  doc: NWB extensions for storing hierarchical behavioral data
+  name: ndx-hierarchical-behavioral-data
+  schema:
+  - namespace: core
+    neurodata_types:
+    - ElectricalSeries
+    - TimeSeries
+    - NWBDataInterface
+    - NWBContainer
+  - namespace: hdmf-common
+    neurodata_types:
+    - DynamicTableRegion
+    - VectorData
+    - Data
+  - source: ndx-hierarchical-behavioral-data.extensions.yaml
+  version: 0.1.0
