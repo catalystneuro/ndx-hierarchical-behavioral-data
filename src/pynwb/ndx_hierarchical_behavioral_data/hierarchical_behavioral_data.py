@@ -24,20 +24,21 @@ class HierarchicalBehavioralTable(TimeIntervals, HierarchicalDynamicTableMixin):
 
     @docval({'name': 'name', 'type': str, 'doc': 'name of table.'},
             {'name': 'description', 'type': str, 'doc': 'description of table.'},
-            {'name': 'next_tier',
+            {'name': 'lower_tier_table',
              'type': 'DynamicTable',
-             'doc': 'The next tier that this table references'},
+             'doc': 'The next tier that this table references',
+             'default': None},
             *get_docval(TimeIntervals.__init__, 'id', 'columns', 'colnames'))
     def __init__(self, **kwargs):
-        next_tier = popargs('next_tier', kwargs)
+        lower_tier_table = popargs('lower_tier_table', kwargs)
 
         # Initialize the DynamicTable
         call_docval_func(super().__init__, kwargs)
         if self['next_tier'].target.table is None:
-            if next_tier is not None:
-                self['next_tier'].target.table = next_tier
+            if lower_tier_table is not None:
+                self['next_tier'].target.table = lower_tier_table
             else:
-                raise ValueError('next_tier constructor argument required')
+                raise ValueError('lower_tier_table constructor argument required')
 
     @docval({'name': 'start_time', 'type': 'float', 'doc': 'Start time of epoch, in seconds', 'default': None},
             {'name': 'stop_time', 'type': 'float', 'doc': 'Stop time of epoch, in seconds', 'default': None},

@@ -12,17 +12,17 @@ phonemes.add_column('label', 'label of phoneme')
 syllables = HierarchicalBehavioralTable(
     name='syllables',
     description='desc',
-    next_tier=phonemes
+    lower_tier_table=phonemes
 )
 
 words = HierarchicalBehavioralTable(
     name='words',
     description='desc',
-    next_tier=syllables
+    lower_tier_table=syllables
 )
 
 sentences = HierarchicalBehavioralTable(
     name='sentences',
     description='desc',
-    next_tier=words
+    lower_tier_table=words
 )
