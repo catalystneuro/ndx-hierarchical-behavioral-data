@@ -11,7 +11,6 @@ def read_transcription_data(path_to_files, filename_pattern):
         lngg_level = []
         for x in f:
             lngg_level.append(x.split())
-    f.close()
     return lngg_level
 
 
