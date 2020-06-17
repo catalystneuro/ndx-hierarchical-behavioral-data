@@ -7,13 +7,12 @@ from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes,
 def read_transcription_data(path_to_files, filename_pattern):
     fpath0 = os.path.join(path_to_files, filename_pattern)
     f_lngg_level = glob.glob(fpath0)[0]
-    f = open(f_lngg_level, "r")
-    lngg_level = []
-    for x in f:
-        lngg_level.append(x.split())
+    with open(f_lngg_level, "r") as f:
+        lngg_level = []
+        for x in f:
+            lngg_level.append(x.split())
     f.close()
     return lngg_level
-
 
 
 
@@ -44,8 +43,8 @@ syllables.add_column('word_onset', '')
 syllables.add_column('syllable_number', '')
 syllables.add_column('speech_sound', '')
 
-j = 0
-for syllables_sample in syllables_data:
+
+for j, syllables_sample in enumerate(syllables_data):
     syllables.add_interval(label=syllables_keys[syllables_sample[4]],
                            start_time=float(syllables_sample[0]),
                            stop_time=float(syllables_sample[1]),
@@ -54,7 +53,6 @@ for syllables_sample in syllables_data:
                            syllable_number=syllables_sample[4],
                            speech_sound=syllables_sample[5],
                            next_tier=[j])
-    j = j + 1
 
 ## To figure out how to assign list of indices to next_tier automatically?
 words_keys = {'bricks': [1], 'are': [2], 'an': [3], 'alternative': [4, 5, 6, 7]}
