@@ -68,7 +68,7 @@ words_keys = {'bricks': [0], 'are': [1], 'an': [2], 'alternative': [3, 4, 5, 6]}
 for ind in words_data.index:
     words.add_interval(start_time=float(words_data['start_time'][ind]), stop_time=float(words_data['stop_time'][ind]),
                        label=words_data['label'][ind],
-                       next_tier=words_keys[words_data['label'][ind]])
+                       next_tier=words_keys[words_data['label'][ind]])  # TODO: next_tier to be corrected
 
 for ind in sentences_data.index:
     sentences.add_interval(start_time=float(sentences_data['start_time'][ind]),
