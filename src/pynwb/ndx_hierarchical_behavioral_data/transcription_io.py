@@ -1,59 +1,76 @@
 import os
 import glob
+import pandas as pd
+import numpy as np
 from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
 
 
-def read_transcription_data(path_to_files, filename_pattern):
+def read_transcription_data(path_to_files, filename_pattern, add_headings, separator=' '):
     fpath0 = os.path.join(path_to_files, filename_pattern)
     f_lngg_level = glob.glob(fpath0)[0]
-    with open(f_lngg_level, "r") as f:
-        lngg_level = []
-        for x in f:
-            lngg_level.append(x.split())
+    lngg_level = pd.read_csv(f_lngg_level,
+                             names=add_headings,
+                             sep=separator)
     return lngg_level
 
 
+def extract_syllables_data(syllables_phonemes_data):
+    uniq_syl = syllables_phonemes_data['syllable_number'].unique()
+    syllables_data = pd.DataFrame(columns=['start_time', 'stop_time', 'label', 'syllable_number'])
+    for i in uniq_syl:
+        x = syllables_phonemes_data[syllables_phonemes_data['syllable_number'] == i].reset_index()
+        data = [
+            [x['start_time'].iloc[0], x['stop_time'].iloc[-1], '-'.join(x["phonemes"]), x['syllable_number'].iloc[0]]]
+        uniq_row = pd.DataFrame(data, columns=['start_time', 'stop_time', 'label', 'syllable_number'])
+        syllables_data = syllables_data.append(uniq_row, ignore_index=True)
+    return syllables_data
+
+
 dpath = 'C:/Users/Admin/Desktop/Ben Dichter/Chang Lab/convert/TimitSounds (Transcriptions)/TimitSounds (' \
-              'Transcriptions)/fadg '
+        'Transcriptions)/fadg'
 
 # Read data
-phonemes_data = read_transcription_data(dpath, '*phn')
-syllables_data = read_transcription_data(dpath, '*syll')
-words_data = read_transcription_data(dpath, '*wrd')
-sentences_data = read_transcription_data(dpath, '*[0-9].txt')
+phonemes_data = read_transcription_data(dpath, '*phn', ['start_time', 'stop_time', 'label'])
+syllables_phonemes_data = read_transcription_data(dpath, '*syll', ['start_time', 'stop_time', 'phonemes', 'word_onset',
+                                                                   'syllable_number', 'speech_sound'])
+words_data = read_transcription_data(dpath, '*wrd', ['start_time', 'stop_time', 'label'])
+sentences_data = read_transcription_data(dpath, '*[0-9].txt', ['start_time', 'stop_time', 'label'], separator='\n')
 
 # Join words
-for i in range(len(sentences_data)):
-    sentences_data[i] = sentences_data[i][0:2] + [' '.join(sentences_data[i][2:])]
+for i in range(sentences_data.shape[0]):
+    sentences_data['stop_time'].loc[i] = sentences_data['start_time'].loc[i].split()[1]
+    sentences_data['label'].loc[i] = ' '.join(sentences_data['start_time'].loc[i].split()[2:])
+    sentences_data['start_time'].loc[i] = sentences_data['start_time'].loc[i].split()[0]
+
+# Create syllables data
+syllables_data = extract_syllables_data(syllables_phonemes_data)
+syllables_data = syllables_data.drop([0]).reset_index(drop=True)
 
 # phonemes
-for phonemes_sample in phonemes_data:
-    phonemes.add_interval(label=phonemes_sample[2], start_time=float(phonemes_sample[0]),
-                          stop_time=float(phonemes_sample[1]))
+for ind in phonemes_data.index:
+    phonemes.add_interval(label=phonemes_data['label'][ind], start_time=float(phonemes_data['start_time'][ind]),
+                          stop_time=float(phonemes_data['stop_time'][ind]))
 
 # syllables
-# To figure out how to create syllables_keys automatically?
-syllables_keys = {'0': 'h#', '1': 'bricks', '2': 'are', '3': 'an', '4': 'al',
-                  '5': 'ter', '6': 'na', '7': 'tive'}
-
-syllables.add_column('word_onset', 'word onset')
-syllables.add_column('speech_sound', '-1 for consonants, 0 for unstressed vowel, 1 - primary stress, 2 - secondary '
-                                     'stress')
-
-for j, syllables_sample in enumerate(syllables_data):
-    syllables.add_interval(label=syllables_keys[syllables_sample[4]],
-                           start_time=float(syllables_sample[0]),
-                           stop_time=float(syllables_sample[1]),
-                           word_onset=syllables_sample[3],
-                           speech_sound=syllables_sample[5],
-                           next_tier=[j])
+cum_phonemes_count = 0
+tier_ind = []
+for ind in syllables_data.index:
+    phonemes_count = len(syllables_data['label'][ind].split('-'))
+    tier_ind = list(range(cum_phonemes_count, cum_phonemes_count + phonemes_count))
+    cum_phonemes_count = cum_phonemes_count + phonemes_count
+    syllables.add_interval(label=syllables_data['label'][ind],
+                           start_time=float(syllables_data['start_time'][ind]),
+                           stop_time=float(syllables_data['stop_time'][ind]),
+                           next_tier=np.array(tier_ind) + 1)
 
 # To figure out how to assign list of indices to next_tier automatically?
-words_keys = {'bricks': [1], 'are': [2], 'an': [3], 'alternative': [4, 5, 6, 7]}
-for words_sample in words_data:
-    words.add_interval(start_time=float(words_sample[0]), stop_time=float(words_sample[1]), label=words_sample[2],
-                       next_tier=words_keys[words_sample[2]])
+words_keys = {'bricks': [0], 'are': [1], 'an': [2], 'alternative': [3, 4, 5, 6]}
+for ind in words_data.index:
+    words.add_interval(start_time=float(words_data['start_time'][ind]), stop_time=float(words_data['stop_time'][ind]),
+                       label=words_data['label'][ind],
+                       next_tier=words_keys[words_data['label'][ind]])
 
-for sentences_sample in sentences_data:
-    sentences.add_interval(start_time=float(sentences_sample[0]), stop_time=float(sentences_sample[1]),
-                           label=sentences_sample[2], next_tier=list(range(len(words_data))))
+for ind in sentences_data.index:
+    sentences.add_interval(start_time=float(sentences_data['start_time'][ind]),
+                           stop_time=float(sentences_data['stop_time'][ind]),
+                           label=sentences_data['label'][ind], next_tier=list(range(words_data.shape[0])))
