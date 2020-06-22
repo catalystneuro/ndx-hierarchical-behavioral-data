@@ -23,6 +23,11 @@ def extract_syllables_data(syllables_phonemes_data):
             [x['start_time'].iloc[0], x['stop_time'].iloc[-1], '-'.join(x["phonemes"]), x['syllable_number'].iloc[0]]]
         uniq_row = pd.DataFrame(data, columns=['start_time', 'stop_time', 'label', 'syllable_number'])
         syllables_data = syllables_data.append(uniq_row, ignore_index=True)
+    last_row = pd.DataFrame([[syllables_data['stop_time'].iloc[-1], syllables_data['stop_time'].iloc[0], 'h#', 0]],
+                            columns=syllables_data.columns)
+    syllables_data = syllables_data.append(last_row, ignore_index=True)
+    syllables_data['stop_time'].iloc[0] = syllables_data['start_time'].iloc[1]
+    syllables_data['label'].iloc[0] = 'h#'
     return syllables_data
 
 
@@ -44,7 +49,6 @@ for i in range(sentences_data.shape[0]):
 
 # Create syllables data
 syllables_data = extract_syllables_data(syllables_phonemes_data)
-syllables_data = syllables_data.drop([0]).reset_index(drop=True)
 
 # phonemes
 for ind in phonemes_data.index:
@@ -61,16 +65,19 @@ for ind in syllables_data.index:
     syllables.add_interval(label=syllables_data['label'][ind],
                            start_time=float(syllables_data['start_time'][ind]),
                            stop_time=float(syllables_data['stop_time'][ind]),
-                           next_tier=np.array(tier_ind) + 1)
+                           next_tier=np.array(tier_ind))
 
 # To figure out how to assign list of indices to next_tier automatically?
-words_keys = {'bricks': [0], 'are': [1], 'an': [2], 'alternative': [3, 4, 5, 6]}
+key_columns = [[1], [2], [3], [4, 5, 6, 7]] # TODO: automate it
+words_data['key_columns'] = key_columns
 for ind in words_data.index:
-    words.add_interval(start_time=float(words_data['start_time'][ind]), stop_time=float(words_data['stop_time'][ind]),
+    words.add_interval(start_time=float(words_data['start_time'][ind]),
+                       stop_time=float(words_data['stop_time'][ind]),
                        label=words_data['label'][ind],
-                       next_tier=words_keys[words_data['label'][ind]])  # TODO: next_tier to be corrected
+                       next_tier=words_data['key_columns'][ind])
 
 for ind in sentences_data.index:
     sentences.add_interval(start_time=float(sentences_data['start_time'][ind]),
                            stop_time=float(sentences_data['stop_time'][ind]),
-                           label=sentences_data['label'][ind], next_tier=list(range(words_data.shape[0])))
+                           label=sentences_data['label'][ind],
+                           next_tier=list(range(words_data.shape[0])))
