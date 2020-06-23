@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import numpy as np
+from pynwb import TimeSeries
 from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
 
 
@@ -60,6 +61,10 @@ syllables_phonemes_data = read_transcription_data(dpath, '*syll', ['start_time',
 words_data = read_transcription_data(dpath, '*wrd', ['start_time', 'stop_time', 'label'])
 sentences_data = read_transcription_data(dpath, '*[0-9].txt', ['start_time', 'stop_time', 'label'], separator='\n')
 
+pitch_data = read_transcription_data(dpath, '*f0', ['h1', 'h2', 'h3', 'h4']) #TODO: Ask about headers
+formant_data = read_transcription_data(dpath, '*frm', ['h1','h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8']) #TODO: Ask about headers
+#TODO: what about Intensity?
+
 # Join words
 for i in range(sentences_data.shape[0]):
     sentences_data['stop_time'].loc[i] = sentences_data['start_time'].loc[i].split()[1]
@@ -100,3 +105,8 @@ for ind in sentences_data.index:
                            stop_time=float(sentences_data['stop_time'][ind]),
                            label=sentences_data['label'][ind],
                            next_tier=list(range(words_data.shape[0])))
+
+pitch_ts = TimeSeries(name='pitch_timeseries', data=np.array(pitch_data), unit='m', starting_time=0.0, rate=1.0)
+#TODO: Ask about rate or timestamps
+formant_ds = TimeSeries(name='formant_decompositionseries', data=np.array(formant_data), unit='m', starting_time=0.0, rate=1.0)
+#TODO: Ask about rate or timestamps. Ask about pynwb module for storing frequency data.
