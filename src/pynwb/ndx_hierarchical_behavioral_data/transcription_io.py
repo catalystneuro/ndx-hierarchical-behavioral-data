@@ -31,6 +31,25 @@ def extract_syllables_data(syllables_phonemes_data):
     return syllables_data
 
 
+def words_syllables_ind(syllables_phonemes_data):
+    word_onset = [i for i, val in enumerate(list(syllables_phonemes_data['word_onset'])) if val == 2] + [
+        len(syllables_phonemes_data['word_onset']) - 1]
+    syllables_onset = [i for i, val in enumerate(list(syllables_phonemes_data['word_onset'])) if val == 1]
+
+    c = 1
+    key_columns = []
+    for i in range(len(word_onset) - 1):
+        word_syl = [c]
+        for j in syllables_onset:
+            if j in range(word_onset[i], word_onset[i + 1]):
+                word_syl.append(c + 1)
+                c = c + 1
+        c = c + 1
+        key_columns.append(word_syl)
+
+    return key_columns
+
+
 dpath = 'C:/Users/Admin/Desktop/Ben Dichter/Chang Lab/convert/TimitSounds (Transcriptions)/TimitSounds (' \
         'Transcriptions)/fadg'
 
@@ -68,7 +87,7 @@ for ind in syllables_data.index:
                            next_tier=np.array(tier_ind))
 
 # To figure out how to assign list of indices to next_tier automatically?
-key_columns = [[1], [2], [3], [4, 5, 6, 7]] # TODO: automate it
+key_columns = words_syllables_ind(syllables_phonemes_data)
 words_data['key_columns'] = key_columns
 for ind in words_data.index:
     words.add_interval(start_time=float(words_data['start_time'][ind]),
