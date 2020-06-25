@@ -28,7 +28,7 @@ def sentences_txt_reader(path_to_files, filename_pattern, col_list):
     return data_df
 
 
-def subject_data(path_to_files, subject):
+def mocha_df(path_to_files):
     phoneme_data = mocha_reader(path_to_files, 'phoneme.times', col_list=['current_phoneme', 'preceding_phoneme',
                                                                           'proceeding_phoneme', 'subject',
                                                                           'onset', 'offset'])
@@ -46,6 +46,11 @@ def subject_data(path_to_files, subject):
                                                                                         'sentence_text', 'go_cue'])
 
     sentences_data = pd.concat([sentences_txt_data, sentences_time_data[['onset', 'offset']]], axis=1)
+
+    return phoneme_data, syllable_data, word_data, sentences_data
+
+
+def mocha_subject_df(phoneme_data, syllable_data, word_data, sentences_data, subject):
 
     subject_phoneme_data = phoneme_data[phoneme_data['subject'] == subject]
     subject_syllable_data = syllable_data[syllable_data['subject'] == subject][['syllable', 'onset', 'offset']]

@@ -4,14 +4,17 @@ import pandas as pd
 import re
 
 
-def textgriddf_converter(path_to_files, filename_pattern='*TextGrid', item_no=2):
+def textgriddf_reader(path_to_files, filename_pattern='*TextGrid'):
     # Read the file and format it by \n
     fpath0 = os.path.join(path_to_files, filename_pattern)
     fpath1 = glob.glob(fpath0)[0]
     with open(fpath1, 'r') as f:
         data = f.read()
     data = data.split('\n')
+    return data
 
+
+def textgriddf_df(data, item_no=2):
     # Find indices of items in the dataset
     item_ind = []
     for i, term in enumerate(data):
@@ -33,4 +36,3 @@ def textgriddf_converter(path_to_files, filename_pattern='*TextGrid', item_no=2)
     text_df = pd.DataFrame(text_list, columns=['xmin', 'xmax', 'text'])
 
     return text_df
-
