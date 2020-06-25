@@ -4,7 +4,7 @@ import pandas as pd
 import re
 
 
-def textgriddf_converter(path_to_files, filename_pattern, item_no=1):
+def textgriddf_converter(path_to_files, filename_pattern='*TextGrid', item_no=2):
     # Read the file and format it by \n
     fpath0 = os.path.join(path_to_files, filename_pattern)
     fpath1 = glob.glob(fpath0)[0]
@@ -34,8 +34,3 @@ def textgriddf_converter(path_to_files, filename_pattern, item_no=1):
 
     return text_df
 
-
-dpath = 'C:/Users/Admin/Desktop/Ben Dichter/Chang Lab/convert/Transcriptions/Transcriptions'
-
-text_df1 = textgriddf_converter(dpath, '*TextGrid', item_no=1)
-text_df2 = textgriddf_converter(dpath, '*TextGrid', item_no=2)
