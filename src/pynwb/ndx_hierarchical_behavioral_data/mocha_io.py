@@ -50,11 +50,13 @@ def mocha_df(path_to_files):
     return phoneme_data, syllable_data, word_data, sentences_data
 
 
-def mocha_subject_df(phoneme_data, syllable_data, word_data, sentences_data, subject):
+def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, re_kw):
 
-    subject_phoneme_data = phoneme_data[phoneme_data['subject'] == subject]
-    subject_syllable_data = syllable_data[syllable_data['subject'] == subject][['syllable', 'onset', 'offset']]
-    subject_word_data = word_data[word_data['subject'] == subject][['word', 'onset', 'offset']]
-    subject_sentences_data = sentences_data[sentences_data['subject'] == subject][['sentence_text', 'onset', 'offset']]
+    re_phoneme_data = phoneme_data[phoneme_data['subject'].str.contains(re_kw)]
+    re_syllable_data = syllable_data[syllable_data['subject'].str.contains(re_kw)][['syllable', 'onset', 'offset']]
+    re_word_data = word_data[word_data['subject'].str.contains(re_kw)][['word', 'onset', 'offset']]
+    re_sentences_data = sentences_data[sentences_data['subject'].str.contains(re_kw)][['sentence_text', 'onset',
+                                                                                       'offset']]
 
-    return subject_phoneme_data, subject_syllable_data, subject_word_data, subject_sentences_data
+    return re_phoneme_data, re_syllable_data, re_word_data, re_sentences_data
+
