@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import numpy as np
+import re
 from pynwb import TimeSeries
 from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
 
@@ -13,6 +14,22 @@ def timitsounds_reader(path_to_files, filename_pattern, add_headings, separator=
                              names=add_headings,
                              sep=separator)
     return lngg_level
+
+
+def intensity_reader(path_to_files, filename_pattern='*Intensity', add_headings=['h1']):
+    fpath0 = os.path.join(path_to_files, filename_pattern)
+    f_lngg_level = glob.glob(fpath0)[0]
+    with open(f_lngg_level, 'r') as f:
+        data = f.read()
+    data = data.split('\n')[15:-1]
+
+    intensity_data = []
+    for i in range(len(data)):
+        intensity_data.append(float(re.findall(r"[-+]?\d*\.\d+|\d+", data[i])[2]))
+
+    intensity_data = pd.DataFrame(intensity_data, columns=add_headings)
+
+    return intensity_data
 
 
 def syllables_data_extractor(syllables_phonemes_data):
@@ -77,12 +94,13 @@ def timitsounds_df(path_to_files):
     # Create other dataframes
     pitch_data = timitsounds_reader(path_to_files, '*f0', ['h1', 'h2', 'h3', 'h4'])
     formant_data = timitsounds_reader(path_to_files, '*frm', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'])
-    # TODO: pitch and formant headers, rate, and timestamps? what about Intensity?
+    intensity_data = intensity_reader(path_to_files)
 
-    return phonemes_data, syllables_data, words_data, sentences_data, pitch_data, formant_data
+    return phonemes_data, syllables_data, words_data, sentences_data, pitch_data, formant_data, intensity_data
 
 
-def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_data, pitch_data, formant_data):
+def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_data, pitch_data, formant_data,
+                          intensity_data):
     # phonemes
     for ind in phonemes_data.index:
         phonemes.add_interval(label=phonemes_data['label'][ind], start_time=float(phonemes_data['start_time'][ind]),
@@ -114,8 +132,10 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
                                next_tier=list(range(words_data.shape[0])))
 
     # others
-    pitch_ts = TimeSeries(name='pitch_timeseries', data=np.array(pitch_data), unit='m', starting_time=0.0, rate=1.0)
-    formant_ts = TimeSeries(name='formant_timeseries', data=np.array(formant_data), unit='m', starting_time=0.0,
+    pitch_ts = TimeSeries(name='pitch_timeseries', data=np.array(pitch_data), starting_time=0.0, unit='s', rate=1.0)
+    formant_ts = TimeSeries(name='formant_timeseries', data=np.array(formant_data), starting_time=0.0, unit='s',
                             rate=1.0)
+    intensity_ts = TimeSeries(name='intensity_timeseries', data=np.array(intensity_data), starting_time=0.032, unit='s',
+                              rate=1000.0)
 
-    return phonemes, syllables, words, sentences, pitch_ts, formant_ts
+    return phonemes, syllables, words, sentences, pitch_ts, formant_ts, intensity_ts
