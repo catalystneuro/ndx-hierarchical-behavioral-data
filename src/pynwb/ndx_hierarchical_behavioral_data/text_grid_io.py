@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import re
+from pynwb.epoch import TimeIntervals
 
 
 def textgriddf_reader(path_to_files, filename_pattern='*TextGrid'):
@@ -36,3 +37,18 @@ def textgriddf_df(data, item_no=2):
     text_df = pd.DataFrame(text_list, columns=['xmin', 'xmax', 'text'])
 
     return text_df
+
+
+def textgriddf_converter(text_df):
+    textgrid_sentences = TimeIntervals(
+        name='textgrid_sentences',
+        description='desc'
+    )
+
+    textgrid_sentences.add_column('label', 'text of sentences')
+
+    for i in text_df.index:
+        textgrid_sentences.add_interval(label=text_df.iloc[i]['text'], start_time=float(text_df.iloc[i]['xmin']),
+                                        stop_time=float(text_df.iloc[i]['xmax']))
+
+    return textgrid_sentences
