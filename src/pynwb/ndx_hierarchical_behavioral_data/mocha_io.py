@@ -56,11 +56,13 @@ def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, subject_
     re_kw = subject_id + '_' + session_id + '_' + trial_id
     re_phoneme_data = phoneme_data[phoneme_data['subject'].str.contains(re_kw)].reset_index(drop=True)
     re_syllable_data = syllable_data[syllable_data['subject'].str.contains(re_kw)][['syllable', 'onset',
-                                                                                    'offset']].reset_index(drop=True)
+                                                                                    'offset',
+                                                                                    'subject']].reset_index(drop=True)
     re_word_data = word_data[word_data['subject'].str.contains(re_kw)][['word', 'onset',
-                                                                        'offset']].reset_index(drop=True)
+                                                                        'offset', 'subject']].reset_index(drop=True)
     re_sentence_data = sentences_data[sentences_data['subject'].str.contains(re_kw)][['sentence_text', 'onset',
-                                                                                      'offset']].reset_index(drop=True)
+                                                                                      'offset',
+                                                                                      'subject']].reset_index(drop=True)
 
     return re_phoneme_data, re_syllable_data, re_word_data, re_sentence_data
 
@@ -102,6 +104,6 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
         sentences.add_interval(start_time=float(re_sentence_data['onset'][ind]),
                                stop_time=float(re_sentence_data['offset'][ind]),
                                label=re_sentence_data['sentence_text'][ind],
-                               next_tier=[0]) # TODO: sentences-to-words map required
+                               next_tier=list(re_word_data[re_word_data['subject']==re_sentence_data['subject'][ind]].index))
 
     return phonemes, syllables, words, sentences
