@@ -1,6 +1,7 @@
 import os
 import glob
 import pandas as pd
+from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
 
 
 def mocha_reader(path_to_files, filename_pattern, col_list, separator=' '):
@@ -50,13 +51,57 @@ def mocha_df(path_to_files):
     return phoneme_data, syllable_data, word_data, sentences_data
 
 
-def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, re_kw):
+def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, subject_id='.....', session_id='...?',
+                trial_id='...'):
+    re_kw = subject_id + '_' + session_id + '_' + trial_id
+    re_phoneme_data = phoneme_data[phoneme_data['subject'].str.contains(re_kw)].reset_index(drop=True)
+    re_syllable_data = syllable_data[syllable_data['subject'].str.contains(re_kw)][['syllable', 'onset',
+                                                                                    'offset']].reset_index(drop=True)
+    re_word_data = word_data[word_data['subject'].str.contains(re_kw)][['word', 'onset',
+                                                                        'offset']].reset_index(drop=True)
+    re_sentence_data = sentences_data[sentences_data['subject'].str.contains(re_kw)][['sentence_text', 'onset',
+                                                                                      'offset']].reset_index(drop=True)
 
-    re_phoneme_data = phoneme_data[phoneme_data['subject'].str.contains(re_kw)]
-    re_syllable_data = syllable_data[syllable_data['subject'].str.contains(re_kw)][['syllable', 'onset', 'offset']]
-    re_word_data = word_data[word_data['subject'].str.contains(re_kw)][['word', 'onset', 'offset']]
-    re_sentences_data = sentences_data[sentences_data['subject'].str.contains(re_kw)][['sentence_text', 'onset',
-                                                                                       'offset']]
+    return re_phoneme_data, re_syllable_data, re_word_data, re_sentence_data
 
-    return re_phoneme_data, re_syllable_data, re_word_data, re_sentences_data
 
+def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence_data):
+    # phonemes
+    phonemes.add_column('preceding_phoneme', 'preceding phoneme')
+    phonemes.add_column('proceeding_phoneme', 'proceeding phoneme')
+
+    for ind in re_phoneme_data.index:
+        phonemes.add_interval(label=re_phoneme_data['current_phoneme'][ind],
+                              preceding_phoneme=re_phoneme_data['preceding_phoneme'][ind],
+                              proceeding_phoneme=re_phoneme_data['proceeding_phoneme'][ind],
+                              start_time=float(re_phoneme_data['onset'][ind]),
+                              stop_time=float(re_phoneme_data['offset'][ind]))
+
+    # syllables
+    nt_list = [[0]]
+    for ind in re_syllable_data.index:
+        phonemes_indices = re_syllable_data['syllable'][ind].split('_')
+        phonemes_indices = [i for i in phonemes_indices if i]
+        start_ind = nt_list[ind][-1] + 1
+        nt = list(range(start_ind, start_ind + len(phonemes_indices)))
+        nt_list.append(nt)
+        syllables.add_interval(label=re_syllable_data['syllable'][ind],
+                               start_time=float(re_syllable_data['onset'][ind]),
+                               stop_time=float(re_syllable_data['offset'][ind]),
+                               next_tier=nt)
+
+    # words
+    for ind in re_word_data.index:
+        words.add_interval(start_time=float(re_word_data['onset'][ind]),
+                           stop_time=float(re_word_data['offset'][ind]),
+                           label=re_word_data['word'][ind],
+                           next_tier=[0])  # TODO: words-to-syllables map required
+
+    # sentences
+    for ind in re_sentence_data.index:
+        sentences.add_interval(start_time=float(re_sentence_data['onset'][ind]),
+                               stop_time=float(re_sentence_data['offset'][ind]),
+                               label=re_sentence_data['sentence_text'][ind],
+                               next_tier=[0]) # TODO: sentences-to-words map required
+
+    return phonemes, syllables, words, sentences

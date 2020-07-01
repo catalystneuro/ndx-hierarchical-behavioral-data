@@ -134,7 +134,7 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
     # others
     pitch_ts = TimeSeries(name='pitch_timeseries', data=np.array(pitch_data), starting_time=0.0, unit='s', rate=1.0)
     formant_ts = TimeSeries(name='formant_timeseries', data=np.array(formant_data), starting_time=0.0, unit='s',
-                            rate=1.0)
+                            rate=1.0) #TODO: rate information for pitch and formant
     intensity_ts = TimeSeries(name='intensity_timeseries', data=np.array(intensity_data), starting_time=0.032, unit='s',
                               rate=1000.0)
 
