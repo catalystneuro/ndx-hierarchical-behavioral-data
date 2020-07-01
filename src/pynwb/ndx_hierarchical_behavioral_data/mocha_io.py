@@ -5,7 +5,27 @@ from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes,
 
 
 def mocha_reader(path_to_files, filename_pattern, col_list, separator=' '):
-    # Read the file
+    """Read a file from specific path and convert it to a DataFrame
+
+        For a given path, and specific file name/pattern, this function reads the file
+        and stores the data in a pandas DataFrame. Name of columns should be provided.
+
+        Parameters
+        ----------
+        path_to_files : str
+            Path to the files
+        filename_pattern: str
+            name or specific pattern in the file name
+        col_list: list
+            list of columns' headers
+        separator: str
+            separator
+
+        Returns
+        ----------
+        pandas.DataFrame
+
+        """
     fpath0 = os.path.join(path_to_files, filename_pattern)
     fpath1 = glob.glob(fpath0)[0]
     data_df = pd.read_csv(fpath1,
@@ -15,7 +35,25 @@ def mocha_reader(path_to_files, filename_pattern, col_list, separator=' '):
 
 
 def sentences_txt_reader(path_to_files, filename_pattern, col_list):
-    # Read the file
+    """Read mocha sentences.txt data and convert them to a DataFrame
+
+        For a given path, and specific file name/pattern, this function reads the file
+        and stores the data in a pandas DataFrame. Name of columns should be provided.
+
+        Parameters
+        ----------
+        path_to_files : str
+            Path to the files
+        filename_pattern: str
+            name or specific pattern in the file name
+        col_list: list
+            list of columns' headers
+
+        Returns
+        ----------
+        pandas.DataFrame
+
+        """
     fpath0 = os.path.join(path_to_files, filename_pattern)
     fpath1 = glob.glob(fpath0)[0]
     with open(fpath1, 'r') as f:
@@ -30,6 +68,28 @@ def sentences_txt_reader(path_to_files, filename_pattern, col_list):
 
 
 def mocha_df(path_to_files):
+    """Read and organize phonemes, syllables, words, and sentences data in DataFrame
+
+        For a given path, this function reads all the files related to phonemes, syllables, words, and sentences data,
+        and stores them in pandas DataFrames. This function gives appropriate names to the columns.
+
+        Parameters
+        ----------
+        path_to_files : str
+            Path to the files
+
+        Returns
+        ----------
+        phoneme_data
+            pandas.DataFrame
+        syllable_data
+            pandas.DataFrame
+        word_data
+            pandas.DataFrame
+        sentences_data
+            pandas.DataFrame
+
+        """
     phoneme_data = mocha_reader(path_to_files, 'phoneme.times', col_list=['current_phoneme', 'preceding_phoneme',
                                                                           'proceeding_phoneme', 'subject',
                                                                           'onset', 'offset'])
@@ -53,6 +113,40 @@ def mocha_df(path_to_files):
 
 def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, subject_id='.....', session_id='...?',
                 trial_id='...'):
+    """Given phonemes, syllables, words, and sentences data, this function extracts specified id's
+
+        For given phonemes, syllables, words, and sentences data, this function extracts information about
+        specified trials/session/or subjects
+
+        Parameters
+        ----------
+        phoneme_data: pandas.DataFrame
+            phonemes' DataFrame
+        syllable_data: pandas.DataFrame
+            syllable' DataFrame
+        word_data: pandas.DataFrame
+            word' DataFrame
+        sentences_data: pandas.DataFrame
+            sentences' DataFrame
+        subject_id: str
+            subject's id
+        session_id: str
+            session's id
+        trial_id: str
+            trial's id
+
+        Returns
+        ----------
+        re_phoneme_data
+            pandas.DataFrame
+        re_syllable_data
+            pandas.DataFrame
+        re_word_data
+            pandas.DataFrame
+        re_sentence_data
+            pandas.DataFrame
+
+        """
     re_kw = subject_id + '_' + session_id + '_' + trial_id
     re_phoneme_data = phoneme_data[phoneme_data['subject'].str.contains(re_kw)].reset_index(drop=True)
     re_syllable_data = syllable_data[syllable_data['subject'].str.contains(re_kw)][['syllable', 'onset',
@@ -68,6 +162,36 @@ def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, subject_
 
 
 def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence_data):
+    """Converts phonemes, syllables, words, and sentences data from a particular trials/session/or subjects into
+        hierarchical table format
+
+        For given phonemes, syllables, words, and sentences data from a particular trials/session/or subjects, this
+        function converts the data into hierarchical table format.
+
+        Parameters
+        ----------
+        re_phoneme_data: pandas.DataFrame
+            phonemes' DataFrame
+        re_syllable_data: pandas.DataFrame
+            syllable' DataFrame
+        re_word_data: pandas.DataFrame
+            word' DataFrame
+        re_sentence_data: pandas.DataFrame
+            sentences' DataFrame
+
+        Returns
+        ----------
+        phonemes
+            pynwb.epoch.TimeIntervals
+        syllables
+            ndx_hierarchical_behavioral_data.hierarchical_behavioral_data.HierarchicalBehavioralTable
+        words
+            ndx_hierarchical_behavioral_data.hierarchical_behavioral_data.HierarchicalBehavioralTable
+        sentences
+            ndx_hierarchical_behavioral_data.hierarchical_behavioral_data.HierarchicalBehavioralTable
+
+        """
+
     # phonemes
     phonemes.add_column('preceding_phoneme', 'preceding phoneme')
     phonemes.add_column('proceeding_phoneme', 'proceeding phoneme')
