@@ -94,10 +94,22 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
 
     # words
     for ind in re_word_data.index:
+        start_ind = re_syllable_data[re_syllable_data['onset'] == re_word_data['onset'][ind]].index[0]
+
+        if ind == len(re_word_data) - 1:
+            stop_ind = len(re_syllable_data) - 1
+        else:
+            stop_ind = re_syllable_data[re_syllable_data['onset'] == re_word_data['onset'][ind + 1]].index[0]
+
+        if start_ind == stop_ind:
+            nt = [start_ind]
+        else:
+            nt = list(range(start_ind, stop_ind))
+
         words.add_interval(start_time=float(re_word_data['onset'][ind]),
                            stop_time=float(re_word_data['offset'][ind]),
                            label=re_word_data['word'][ind],
-                           next_tier=[0])  # TODO: words-to-syllables map required
+                           next_tier=nt)
 
     # sentences
     for ind in re_sentence_data.index:
