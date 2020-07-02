@@ -6,10 +6,10 @@ from pynwb.epoch import TimeIntervals
 
 
 def textgriddf_reader(path_to_files, filename_pattern='*TextGrid'):
-    """Read TextGrid file and format it by
+    """Read TextGrid file
 
         For a given path, and specific file name/pattern (default='*TextGrid'), this function reads the file
-        and format it by.
+        and format it.
 
         Parameters
         ----------
