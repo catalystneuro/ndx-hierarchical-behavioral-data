@@ -20,7 +20,7 @@ def timitsounds_reader(path_to_files, filename_pattern, add_headings, separator=
         filename_pattern: str
             name or specific pattern in the file name
         add_headings: list
-            list of columns' headers
+            list of headers
         separator: str
             separator
 
@@ -50,7 +50,7 @@ def intensity_reader(path_to_files, filename_pattern='*Intensity', add_headings=
         filename_pattern: str
             name or specific pattern in the file name
         add_headings: list
-            list of columns' headers
+            list of headers
 
         Returns
         ----------
@@ -208,13 +208,13 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
         Parameters
         ----------
         phonemes_data: pandas.DataFrame
-            phonemes' DataFrame
+            phonemes DataFrame
         syllables_data: pandas.DataFrame
-            syllable' DataFrame
+            syllable DataFrame
         words_data: pandas.DataFrame
-            word' DataFrame
+            word DataFrame
         sentences_data: pandas.DataFrame
-            sentences' DataFrame
+            sentences DataFrame
         pitch_data: pandas.DataFrame
             pitch DataFrame
         formant_data: pandas.DataFrame

@@ -47,7 +47,7 @@ def sentences_txt_reader(path_to_files, filename_pattern, col_list):
         filename_pattern: str
             name or specific pattern in the file name
         col_list: list
-            list of columns' headers
+            list of headers
 
         Returns
         ----------
@@ -121,13 +121,13 @@ def mocha_re_df(phoneme_data, syllable_data, word_data, sentences_data, subject_
         Parameters
         ----------
         phoneme_data: pandas.DataFrame
-            phonemes' DataFrame
+            phonemes DataFrame
         syllable_data: pandas.DataFrame
-            syllable' DataFrame
+            syllable DataFrame
         word_data: pandas.DataFrame
-            word' DataFrame
+            word DataFrame
         sentences_data: pandas.DataFrame
-            sentences' DataFrame
+            sentences DataFrame
         subject_id: str
             subject's id
         session_id: str
@@ -171,13 +171,13 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
         Parameters
         ----------
         re_phoneme_data: pandas.DataFrame
-            phonemes' DataFrame
+            phonemes DataFrame
         re_syllable_data: pandas.DataFrame
-            syllable' DataFrame
+            syllable DataFrame
         re_word_data: pandas.DataFrame
-            word' DataFrame
+            word DataFrame
         re_sentence_data: pandas.DataFrame
-            sentences' DataFrame
+            sentences DataFrame
 
         Returns
         ----------
