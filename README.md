@@ -1,6 +1,6 @@
 # ndx-hierarchical-behavioral-data Extension for NWB
 
-![schema schema](https://github.com/catalystneuro/ndx-hierarchical-behavioral-data/tree/master/docs/media/hierarchical_behavioral_data.png?raw=true)
+![schema schema](https://github.com/catalystneuro/ndx-hierarchical-behavioral-data/blob/master/docs/media/hierarchical_behavioral_data.png)
 
 ## Installation
 
