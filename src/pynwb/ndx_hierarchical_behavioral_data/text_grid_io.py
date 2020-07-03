@@ -5,7 +5,7 @@ import re
 from pynwb.epoch import TimeIntervals
 
 
-def textgriddf_reader(path_to_files, filename_pattern='*TextGrid'):
+def textgriddf_reader(path_file, filename_pattern='*TextGrid'):
     """Read TextGrid file
 
         For a given path, and specific file name/pattern (default='*TextGrid'), this function reads the file
@@ -23,9 +23,9 @@ def textgriddf_reader(path_to_files, filename_pattern='*TextGrid'):
         list
 
         """
-    fpath0 = os.path.join(path_to_files, filename_pattern)
-    fpath1 = glob.glob(fpath0)[0]
-    with open(fpath1, 'r') as f:
+    # fpath0 = os.path.join(path_to_files, filename_pattern)
+    # fpath1 = glob.glob(fpath0)[0]
+    with open(path_file, 'r') as f:
         data = f.read()
     data = data.split('\n')
     return data
