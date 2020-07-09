@@ -5,26 +5,20 @@ import re
 from pynwb.epoch import TimeIntervals
 
 
-def textgriddf_reader(path_file, filename_pattern='*TextGrid'):
-    """Read TextGrid file
+def textgriddf_reader(path_file):
+    """
+    Read the TextGrid file and format it.
 
-        For a given path, and specific file name/pattern (default='*TextGrid'), this function reads the file
-        and format it.
+    Parameters
+    ----------
+    path_to_files : str
+        Path to the files
 
-        Parameters
-        ----------
-        path_to_files : str
-            Path to the files
-        filename_pattern: str
-            name or specific pattern in the file name
+    Returns
+    ----------
+    list
 
-        Returns
-        ----------
-        list
-
-        """
-    # fpath0 = os.path.join(path_to_files, filename_pattern)
-    # fpath1 = glob.glob(fpath0)[0]
+    """
     with open(path_file, 'r') as f:
         data = f.read()
     data = data.split('\n')
