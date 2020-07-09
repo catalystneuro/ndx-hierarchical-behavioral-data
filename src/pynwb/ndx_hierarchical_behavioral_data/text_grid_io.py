@@ -81,7 +81,7 @@ def textgriddf_converter(text_df):
 
         """
     textgrid_sentences = TimeIntervals(
-        name='textgrid_sentences',
+        name='sentences',
         description='desc'
     )
 
