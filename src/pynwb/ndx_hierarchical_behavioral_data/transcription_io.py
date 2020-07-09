@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import re
 from pynwb import TimeSeries
-from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
+from ndx_hierarchical_behavioral_data.definitions.transcription import TIPhonemes, HBTSyllables, HBTWords, HBTSentences
 
 
 def timitsounds_reader(path_to_files, filename_pattern, add_headings, separator=' '):
@@ -241,11 +241,13 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
 
         """
     # phonemes
+    phonemes = TIPhonemes()
     for ind in phonemes_data.index:
         phonemes.add_interval(label=phonemes_data['label'][ind], start_time=float(phonemes_data['start_time'][ind]),
                               stop_time=float(phonemes_data['stop_time'][ind]))
 
     # syllables
+    syllables = HBTSyllables(lower_tier_table=phonemes)
     cum_phonemes_count = 0
     for ind in syllables_data.index:
         phonemes_count = len(syllables_data['label'][ind].split('-'))
@@ -257,6 +259,7 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
                                next_tier=np.array(tier_ind))
 
     # words
+    words = HBTWords(lower_tier_table=syllables)
     for ind in words_data.index:
         words.add_interval(start_time=float(words_data['start_time'][ind]),
                            stop_time=float(words_data['stop_time'][ind]),
@@ -264,6 +267,7 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
                            next_tier=words_data['key_columns'][ind])
 
     # sentences
+    sentences = HBTSentences(lower_tier_table=words)
     for ind in sentences_data.index:
         sentences.add_interval(start_time=float(sentences_data['start_time'][ind]),
                                stop_time=float(sentences_data['stop_time'][ind]),
