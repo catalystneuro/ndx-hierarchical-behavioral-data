@@ -1,7 +1,7 @@
 import os
 import glob
 import pandas as pd
-from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
+from ndx_hierarchical_behavioral_data.definitions.transcription import TIPhonemes, HBTSyllables, HBTWords, HBTSentences
 
 
 def mocha_reader(path_to_files, filename_pattern, col_list, separator=' '):
@@ -193,6 +193,7 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
         """
 
     # phonemes
+    phonemes = TIPhonemes()
     phonemes.add_column('preceding_phoneme', 'preceding phoneme')
     phonemes.add_column('proceeding_phoneme', 'proceeding phoneme')
 
@@ -204,6 +205,7 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
                               stop_time=float(re_phoneme_data['offset'][ind]))
 
     # syllables
+    syllables = HBTSyllables(lower_tier_table=phonemes)
     nt_list = [[0]]
     for ind in re_syllable_data.index:
         phonemes_indices = re_syllable_data['syllable'][ind].split('_')
@@ -217,6 +219,7 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
                                next_tier=nt)
 
     # words
+    words = HBTWords(lower_tier_table=syllables)
     for ind in re_word_data.index:
         start_ind = re_syllable_data[re_syllable_data['onset'] == re_word_data['onset'][ind]].index[0]
 
@@ -236,6 +239,7 @@ def mocha_converter(re_phoneme_data, re_syllable_data, re_word_data, re_sentence
                            next_tier=nt)
 
     # sentences
+    sentences = HBTSentences(lower_tier_table=words)
     for ind in re_sentence_data.index:
         sentences.add_interval(start_time=float(re_sentence_data['onset'][ind]),
                                stop_time=float(re_sentence_data['offset'][ind]),
