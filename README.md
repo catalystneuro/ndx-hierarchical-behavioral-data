@@ -1,31 +1,42 @@
 # ndx-hierarchical-behavioral-data Extension for NWB
 
+[![PyPI version](https://badge.fury.io/py/ndx-hierarchical-behavioral-data.svg)](https://badge.fury.io/py/ndx-hierarchical-behavioral-data)
+
 ![schema schema](https://github.com/catalystneuro/ndx-hierarchical-behavioral-data/blob/master/docs/media/hierarchical_behavioral_data.png?raw=true)
 
 ## Installation
 
+```
+pip install ndx-hierarchical-behavioral-data
+```
 
 ## Usage
 Use pre-made hierarchical transcription tables:
 
 ```python
-from ndx_hierarchical_behavioral_data.definitions.transcription import phonemes, syllables, words, sentences
+from ndx_hierarchical_behavioral_data.definitions.transcription import TIPhonemes, HBTSyllables, HBTWords, HBTSentences
 
+# Phonemes level
+phonemes = TIPhonemes()
 phonemes.add_column('max_pitch', 'maximum pitch for this phoneme. NaN for unvoiced')
-
 for i, p in enumerate('abcdefghijkl'):
     phonemes.add_interval(label=p, start_time=float(i), stop_time=float(i+1), max_pitch=i**2)
 
+# Syllables level
+syllables = HBTSyllables(lower_tier_table=phonemes)
 syllables.add_interval(label='abc', next_tier=[0, 1, 2])
 syllables.add_interval(label='def', next_tier=[3, 4, 5])
 syllables.add_interval(label='ghi', next_tier=[6, 7, 8])
 syllables.add_interval(label='jkl', next_tier=[9, 10, 11])
 
+# Words level
+words = HBTWords(lower_tier_table=syllables)
 words.add_column('emphasis', 'boolean indicating whether this word was emphasized')
-
 words.add_interval(label='A-F', next_tier=[0, 1], emphasis=False)
 words.add_interval(label='G-L', next_tier=[2, 3], emphasis=True)
 
+# Sentences level
+sentences = HBTSentences(lower_tier_table=words)
 sentences.add_interval(label='A-L', next_tier=[0, 1])
 ```
 
