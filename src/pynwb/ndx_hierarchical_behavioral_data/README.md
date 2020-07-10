@@ -82,3 +82,27 @@ nwbfile.processing['behavior'].add(sentences)
 ```
 
 ## Read from files - TextGrid
+```python
+
+from pynwb import NWBHDF5IO, NWBFile
+from datetime import datetime
+
+# Get transcriptions
+path_to_file = '/path_to_file'
+
+data = textgriddf_reader(path_file=path_to_file)
+text_df = textgriddf_df(data, item_no=2)
+sentences = textgriddf_converter(text_df)
+
+# Create NWB file
+nwbfile = NWBFile('description', 'id', datetime.now().astimezone())
+
+# Create behavioral processing module
+nwbfile.create_processing_module(
+    name='behavior',
+    description='behavioral data'
+)
+
+# Add sentences table to behavioral processing module
+nwbfile.processing['behavior'].add(sentences)
+```
