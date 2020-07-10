@@ -1,6 +1,7 @@
 from ndx_hierarchical_behavioral_data.definitions.transcription import TIPhonemes, HBTSyllables, HBTWords, HBTSentences
 from pynwb import NWBHDF5IO, NWBFile
 from pynwb.testing import TestCase, remove_test_file
+import numpy as np
 import datetime
 
 
@@ -55,7 +56,12 @@ class TestTranscription(TestCase):
 
         with NWBHDF5IO(self.path, mode='r', load_namespaces=True) as io:
             read_nwbfile = io.read()
-            self.assertContainerEqual(sentences, read_nwbfile.processing['test_mod']['sentences'])
-            self.assertContainerEqual(words, read_nwbfile.processing['test_mod']['words'])
-            self.assertContainerEqual(syllables, read_nwbfile.processing['test_mod']['syllables'])
-            self.assertContainerEqual(phonemes, read_nwbfile.processing['test_mod']['phonemes'])
+
+            for col in phonemes.colnames:
+                np.testing.assert_equal(phonemes[col][:], read_nwbfile.processing['test_mod']['phonemes'][col][:])
+
+            for col in [c for c in syllables.colnames if c != 'next_tier']:
+                np.testing.assert_equal(syllables[col][:], read_nwbfile.processing['test_mod']['syllables'][col][:])
+
+            for col in [c for c in words.colnames if c != 'next_tier']:
+                np.testing.assert_equal(words[col][:], read_nwbfile.processing['test_mod']['words'][col][:])
