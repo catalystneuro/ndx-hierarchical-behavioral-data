@@ -10,7 +10,7 @@ def main():
     ns_builder = NamespaceBuilder(
         doc="""HDMF extensions for storing hierarchical behavioral data""",
         name="""ndx-hierarchical-behavioral-data""",
-        version="""0.1.0""",
+        version="""0.1.1""",
         author=list(map(str.strip, """Ben Dichter""".split(','))),
         contact=list(map(str.strip, """ben.dichter@catalystneuro.com""".split(',')))
     )
