@@ -49,10 +49,10 @@ class HierarchicalBehavioralTable(TimeIntervals, HierarchicalDynamicTableMixin):
             allow_extra=True)
     def add_interval(self, **kwargs):
         # automatically populate the time with the start time of the first element of the next tier
-        if getattr(kwargs, 'start_time', None) is None:
+        if kwargs.get('start_time', None) is None:
             kwargs.update(start_time=self['next_tier'].target.table['start_time'][kwargs['next_tier'][0]])
 
-        if getattr(kwargs, 'stop_time', None) is None:
+        if kwargs.get('stop_time', None) is None:
             kwargs.update(stop_time=self['next_tier'].target.table['stop_time'][kwargs['next_tier'][-1]])
 
         super().add_interval(**kwargs)
