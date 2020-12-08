@@ -93,7 +93,7 @@ def syllables_data_extractor(syllables_phonemes_data):
     for i in uniq_syl:
         x = syllables_phonemes_data[syllables_phonemes_data['syllable_number'] == i].reset_index()
         data = [
-            [x['start_time'].iloc[0], x['stop_time'].iloc[-1], '-'.join(x["phonemes"]), x['syllable_number'].iloc[0]]]
+            [x['start_time'].iloc[0], x['stop_time'].iloc[-1], ','.join(x["phonemes"]), x['syllable_number'].iloc[0]]]
         uniq_row = pd.DataFrame(data, columns=['start_time', 'stop_time', 'label', 'syllable_number'])
         syllables_data = syllables_data.append(uniq_row, ignore_index=True)
     last_row = pd.DataFrame([[syllables_data['stop_time'].iloc[-1], syllables_data['stop_time'].iloc[0], 'h#', 0]],
@@ -250,7 +250,7 @@ def timitsounds_converter(phonemes_data, syllables_data, words_data, sentences_d
     syllables = HBTSyllables(lower_tier_table=phonemes)
     cum_phonemes_count = 0
     for ind in syllables_data.index:
-        phonemes_count = len(syllables_data['label'][ind].split('-'))
+        phonemes_count = len(syllables_data['label'][ind].split(','))
         tier_ind = list(range(cum_phonemes_count, cum_phonemes_count + phonemes_count))
         cum_phonemes_count = cum_phonemes_count + phonemes_count
         syllables.add_interval(label=syllables_data['label'][ind],
