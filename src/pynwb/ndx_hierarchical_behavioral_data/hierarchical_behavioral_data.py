@@ -1,11 +1,10 @@
-from hdmf.common import DynamicTable, DynamicTableRegion
 from pynwb.epoch import TimeIntervals
 from pynwb import register_class, TimeSeries
 from hdmf.utils import docval, get_docval, popargs
 
 
 @register_class('HierarchicalBehavioralTable', 'ndx-hierarchical-behavioral-data')
-class HierarchicalBehavioralTable(TimeIntervals, DynamicTable):
+class HierarchicalBehavioralTable(TimeIntervals):
     """
     A table for storing hierarchical behavioral data.
     """
