@@ -2,9 +2,9 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from tempfile import mkdtemp
-from zoneinfo import ZoneInfo
 
 import numpy as np
+from dateutil import tz
 from hdmf.testing import TestCase
 from pynwb import NWBFile, NWBHDF5IO
 from pynwb.epoch import TimeIntervals
@@ -19,7 +19,7 @@ class TestHierarchicalBehavioralTable(TestCase):
         self.nwbfile = NWBFile(
             session_description="session_description",
             identifier="identifier",
-            session_start_time=datetime.now().astimezone(tz=ZoneInfo("US/Pacific")),
+            session_start_time=datetime.now().astimezone(tz=tz.gettz("US/Pacific")),
         )
         self.nwbfile_path = self.test_dir / "test.nwb"
 
