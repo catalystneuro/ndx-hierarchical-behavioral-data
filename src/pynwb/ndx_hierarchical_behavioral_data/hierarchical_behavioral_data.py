@@ -1,15 +1,13 @@
-from ndx_icephys_meta.icephys import HierarchicalDynamicTableMixin
+from hdmf.common import DynamicTable, DynamicTableRegion
 from pynwb.epoch import TimeIntervals
-from pynwb.base import TimeSeries
-from pynwb import register_class
-from hdmf.utils import docval, get_docval, popargs, call_docval_func
+from pynwb import register_class, TimeSeries
+from hdmf.utils import docval, get_docval, popargs
 
 
 @register_class('HierarchicalBehavioralTable', 'ndx-hierarchical-behavioral-data')
-class HierarchicalBehavioralTable(TimeIntervals, HierarchicalDynamicTableMixin):
-
+class HierarchicalBehavioralTable(TimeIntervals, DynamicTable):
     """
-    A table to store different phonemes
+    A table for storing hierarchical behavioral data.
     """
     __columns__ = tuple(list(TimeIntervals.__columns__) + [
         {'name': 'label',
@@ -31,9 +29,9 @@ class HierarchicalBehavioralTable(TimeIntervals, HierarchicalDynamicTableMixin):
             *get_docval(TimeIntervals.__init__, 'id', 'columns', 'colnames'))
     def __init__(self, **kwargs):
         lower_tier_table = popargs('lower_tier_table', kwargs)
+        self.lower_tier_table = lower_tier_table
+        super().__init__(**kwargs)
 
-        # Initialize the DynamicTable
-        call_docval_func(super().__init__, kwargs)
         if self['next_tier'].target.table is None:
             if lower_tier_table is not None:
                 self['next_tier'].target.table = lower_tier_table
