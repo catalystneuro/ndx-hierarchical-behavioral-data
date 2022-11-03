@@ -22,7 +22,7 @@ except Exception:
 
 setup_args = {
     'name': 'ndx-hierarchical-behavioral-data',
-    'version': '0.1.1',
+    'version': '0.1.2',
     'description': 'NWB extensions for storing hierarchical behavioral data',
     'long_description': readme,
     'long_description_content_type': readme_type,
