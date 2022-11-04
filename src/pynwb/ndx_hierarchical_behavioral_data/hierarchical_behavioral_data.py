@@ -1,3 +1,4 @@
+from hdmf.common.hierarchicaltable import to_hierarchical_dataframe
 from pynwb.epoch import TimeIntervals
 from pynwb import register_class, TimeSeries
 from hdmf.utils import docval, get_docval, popargs
@@ -53,3 +54,6 @@ class HierarchicalBehavioralTable(TimeIntervals):
             kwargs.update(stop_time=self['next_tier'].target.table['stop_time'][kwargs['next_tier'][-1]])
 
         super().add_interval(**kwargs)
+
+    def to_hierarchical_dataframe(self):
+        return to_hierarchical_dataframe(dynamic_table=self)
