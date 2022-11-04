@@ -1,6 +1,6 @@
 from hdmf.common.hierarchicaltable import to_hierarchical_dataframe
 from pynwb.epoch import TimeIntervals
-from pynwb import register_class, TimeSeries
+from pynwb import register_class
 from hdmf.utils import docval, get_docval, popargs
 
 
@@ -24,7 +24,7 @@ class HierarchicalBehavioralTable(TimeIntervals):
             {'name': 'description', 'type': str, 'doc': 'description of table.'},
             {'name': 'lower_tier_table',
              'type': 'DynamicTable',
-             'doc': 'The next tier that this table references',
+             'doc': 'The lower hierarchy table that this table references.',
              'default': None},
             *get_docval(TimeIntervals.__init__, 'id', 'columns', 'colnames'))
     def __init__(self, **kwargs):
@@ -38,12 +38,9 @@ class HierarchicalBehavioralTable(TimeIntervals):
             else:
                 raise ValueError('lower_tier_table constructor argument required')
 
-    @docval({'name': 'start_time', 'type': 'float', 'doc': 'Start time of epoch, in seconds', 'default': None},
-            {'name': 'stop_time', 'type': 'float', 'doc': 'Stop time of epoch, in seconds', 'default': None},
-            {'name': 'tags', 'type': (str, list, tuple), 'doc': 'user-defined tags used throughout time intervals',
-             'default': None},
-            {'name': 'timeseries', 'type': (list, tuple, TimeSeries), 'doc': 'the TimeSeries this epoch applies to',
-             'default': None},
+    @docval({'name': 'start_time', 'type': 'float', 'doc': 'Start time of interval, in seconds', 'default': None},
+            {'name': 'stop_time', 'type': 'float', 'doc': 'Stop time of interval, in seconds', 'default': None},
+            *get_docval(TimeIntervals.add_interval, 'tags', 'timeseries'),
             allow_extra=True)
     def add_interval(self, **kwargs):
         # automatically populate the time with the start time of the first element of the next tier
