@@ -6,6 +6,7 @@ from tempfile import mkdtemp
 import numpy as np
 from dateutil import tz
 from hdmf.testing import TestCase
+from pandas.testing import assert_frame_equal
 from pynwb import NWBFile, NWBHDF5IO
 from pynwb.epoch import TimeIntervals
 
@@ -56,6 +57,8 @@ class TestHierarchicalBehavioralTable(TestCase):
             next_tier=[3, 4],
         )
 
+        sentences_dataframe = sentences_table.to_hierarchical_dataframe()
+
         self.nwbfile.add_time_intervals(self.lower_tier_table)
         self.nwbfile.add_time_intervals(sentences_table)
 
@@ -64,6 +67,11 @@ class TestHierarchicalBehavioralTable(TestCase):
 
         with NWBHDF5IO(self.nwbfile_path, mode="r", load_namespaces=True) as io:
             read_nwbfile = io.read()
+
+            assert_frame_equal(
+                sentences_dataframe,
+                read_nwbfile.intervals["Sentences"].to_hierarchical_dataframe(),
+            )
 
             for column_name in self.lower_tier_table.colnames:
                 np.testing.assert_array_equal(
