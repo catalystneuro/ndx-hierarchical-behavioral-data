@@ -7,60 +7,88 @@ import numpy as np
 from dateutil import tz
 from hdmf.testing import TestCase
 from pandas.testing import assert_frame_equal
-from pynwb import NWBFile, NWBHDF5IO
+from pynwb import NWBFile, NWBHDF5IO, get_manager
 from pynwb.epoch import TimeIntervals
+from pynwb.testing import remove_test_file
 
 from ndx_hierarchical_behavioral_data import HierarchicalBehavioralTable
 
 
 class TestHierarchicalBehavioralTable(TestCase):
     def setUp(self):
-        self.test_dir = Path(mkdtemp())
+        self.words_table = TimeIntervals(
+            name="Words",
+            description="The intervals for the lowest hierarchy.",
+        )
+        self.words_table.add_column(
+            name="label", description="The label for this table."
+        )
+
+        self.words_table.add_row(start_time=0.3, stop_time=0.5, label="The")
+        self.words_table.add_row(start_time=0.7, stop_time=0.9, label="First")
+        self.words_table.add_row(start_time=1.3, stop_time=3.0, label="Sentence")
+        self.words_table.add_row(start_time=4.0, stop_time=5.0, label="And")
+        self.words_table.add_row(start_time=6.0, stop_time=7.0, label="Another")
+
+        self.sentences_table = HierarchicalBehavioralTable(
+            name="Sentences",
+            description="The behavioral table.",
+            lower_tier_table=self.words_table,
+        )
+        self.sentences_table.add_interval(
+            label="Sentence1",
+            next_tier=[0, 1, 2],
+        )
+        self.sentences_table.add_interval(
+            label="Sentence2",
+            next_tier=[3, 4],
+        )
 
         self.nwbfile = NWBFile(
             session_description="session_description",
             identifier="identifier",
             session_start_time=datetime.now().astimezone(tz=tz.gettz("US/Pacific")),
         )
-        self.nwbfile_path = self.test_dir / "test.nwb"
-
-        self.lower_tier_table = TimeIntervals(
-            name="Words",
-            description="The intervals for the lowest hierarchy.",
-        )
-
-        self.lower_tier_table.add_column(
-            name="label", description="The label for this table."
-        )
-
-        self.lower_tier_table.add_row(start_time=0.3, stop_time=0.5, label="The")
-        self.lower_tier_table.add_row(start_time=0.7, stop_time=0.9, label="First")
-        self.lower_tier_table.add_row(start_time=1.3, stop_time=3.0, label="Sentence")
-        self.lower_tier_table.add_row(start_time=4.0, stop_time=5.0, label="And")
-        self.lower_tier_table.add_row(start_time=6.0, stop_time=7.0, label="Another")
+        self.nwbfile_path = Path(mkdtemp()) / "test_hierarchical_behavior_data.nwb"
 
     def tearDown(self):
-        shutil.rmtree(self.test_dir)
+        remove_test_file(self.nwbfile_path)
 
     def test_roundtrip(self):
-        sentences_table = HierarchicalBehavioralTable(
-            name="Sentences",
-            description="The behavioral table.",
-            lower_tier_table=self.lower_tier_table,
+        self.nwbfile.add_time_intervals(self.words_table)
+        self.nwbfile.add_time_intervals(self.sentences_table)
+
+        with NWBHDF5IO(self.nwbfile_path, mode="w") as io:
+            io.write(self.nwbfile)
+
+        with NWBHDF5IO(self.nwbfile_path, mode="r", load_namespaces=True) as io:
+            read_nwbfile = io.read()
+
+            self.assertEqual(len(read_nwbfile.intervals), 2)
+
+            self.assertIn("Words", read_nwbfile.intervals)
+            self.assertIn("Sentences", read_nwbfile.intervals)
+
+            self.assertIsInstance(
+                read_nwbfile.intervals["Sentences"], HierarchicalBehavioralTable,
+            )
+
+    def test_hierarchical_dataframes(self):
+        paragraphs_table = HierarchicalBehavioralTable(
+            name="Paragraphs",
+            description="The table representing the highest hierarchy.",
+            lower_tier_table=self.sentences_table,
         )
-        sentences_table.add_interval(
-            label="Sentence1",
-            next_tier=[0, 1, 2],
-        )
-        sentences_table.add_interval(
-            label="Sentence2",
-            next_tier=[3, 4],
+        paragraphs_table.add_interval(
+            label="Paragraph",
+            next_tier=[0, 1],
         )
 
-        sentences_dataframe = sentences_table.to_hierarchical_dataframe()
+        paragraphs_hierarchical_dataframe = paragraphs_table.to_hierarchical_dataframe()
 
-        self.nwbfile.add_time_intervals(self.lower_tier_table)
-        self.nwbfile.add_time_intervals(sentences_table)
+        self.nwbfile.add_time_intervals(self.words_table)
+        self.nwbfile.add_time_intervals(self.sentences_table)
+        self.nwbfile.add_time_intervals(paragraphs_table)
 
         with NWBHDF5IO(self.nwbfile_path, mode="w") as io:
             io.write(self.nwbfile)
@@ -69,20 +97,16 @@ class TestHierarchicalBehavioralTable(TestCase):
             read_nwbfile = io.read()
 
             assert_frame_equal(
-                sentences_dataframe,
+                self.words_table.to_dataframe(),
+                read_nwbfile.intervals["Words"].to_dataframe(),
+            )
+
+            assert_frame_equal(
+                self.sentences_table.to_hierarchical_dataframe(),
                 read_nwbfile.intervals["Sentences"].to_hierarchical_dataframe(),
             )
 
-            for column_name in self.lower_tier_table.colnames:
-                np.testing.assert_array_equal(
-                    self.lower_tier_table[column_name][:],
-                    read_nwbfile.intervals["Words"][column_name][:],
-                )
-
-            for column_name in [
-                column for column in sentences_table.colnames if column != "next_tier"
-            ]:
-                np.testing.assert_array_equal(
-                    sentences_table[column_name][:],
-                    read_nwbfile.intervals["Sentences"][column_name][:],
-                )
+            assert_frame_equal(
+                paragraphs_hierarchical_dataframe,
+                read_nwbfile.intervals["Paragraphs"].to_hierarchical_dataframe(),
+            )
