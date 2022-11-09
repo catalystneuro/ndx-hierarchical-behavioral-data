@@ -1,3 +1,4 @@
+import pandas as pd
 from hdmf.common.hierarchicaltable import to_hierarchical_dataframe
 from pynwb.epoch import TimeIntervals
 from pynwb import register_class
@@ -52,5 +53,14 @@ class HierarchicalBehavioralTable(TimeIntervals):
 
         super().add_interval(**kwargs)
 
-    def to_hierarchical_dataframe(self):
-        return to_hierarchical_dataframe(dynamic_table=self)
+    def to_hierarchical_dataframe(self) -> pd.DataFrame:
+        """
+        Creates a Pandas DataFrame with a hierarchical MultiIndex index
+        that represents the hierarchical dynamic table.
+        """
+
+        hierarchical_dataframe = to_hierarchical_dataframe(dynamic_table=self)
+        flat_index_names = ["_".join(name) for name in hierarchical_dataframe.index.names]
+        hierarchical_dataframe.index.names = flat_index_names
+
+        return hierarchical_dataframe
