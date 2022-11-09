@@ -1,47 +1,56 @@
-import shutil
 from datetime import datetime
 from pathlib import Path
 from tempfile import mkdtemp
 
-import numpy as np
 from dateutil import tz
 from hdmf.testing import TestCase
 from pandas.testing import assert_frame_equal
-from pynwb import NWBFile, NWBHDF5IO, get_manager
+from pynwb import NWBFile, NWBHDF5IO
 from pynwb.epoch import TimeIntervals
 from pynwb.testing import remove_test_file
 
 from ndx_hierarchical_behavioral_data import HierarchicalBehavioralTable
 
 
+def create_time_intervals():
+    words_table = TimeIntervals(
+        name="Words",
+        description="The intervals for the lowest hierarchy.",
+    )
+    words_table.add_column(
+        name="label", description="The label for this table."
+    )
+
+    words_table.add_row(start_time=0.3, stop_time=0.5, label="The")
+    words_table.add_row(start_time=0.7, stop_time=0.9, label="First")
+    words_table.add_row(start_time=1.3, stop_time=3.0, label="Sentence")
+    words_table.add_row(start_time=4.0, stop_time=5.0, label="And")
+    words_table.add_row(start_time=6.0, stop_time=7.0, label="Another")
+
+    return words_table
+
+
 class TestHierarchicalBehavioralTable(TestCase):
     def setUp(self):
-        self.words_table = TimeIntervals(
-            name="Words",
-            description="The intervals for the lowest hierarchy.",
-        )
-        self.words_table.add_column(
-            name="label", description="The label for this table."
-        )
-
-        self.words_table.add_row(start_time=0.3, stop_time=0.5, label="The")
-        self.words_table.add_row(start_time=0.7, stop_time=0.9, label="First")
-        self.words_table.add_row(start_time=1.3, stop_time=3.0, label="Sentence")
-        self.words_table.add_row(start_time=4.0, stop_time=5.0, label="And")
-        self.words_table.add_row(start_time=6.0, stop_time=7.0, label="Another")
+        self.words_table = create_time_intervals()
 
         self.sentences_table = HierarchicalBehavioralTable(
             name="Sentences",
             description="The behavioral table.",
             lower_tier_table=self.words_table,
         )
+        self.sentences_table.add_column(
+            name="is_practice", description="Whether or not this sentence were shown as practice."
+        )
         self.sentences_table.add_interval(
             label="Sentence1",
             next_tier=[0, 1, 2],
+            is_practice=True,
         )
         self.sentences_table.add_interval(
             label="Sentence2",
             next_tier=[3, 4],
+            is_practice=False,
         )
 
         self.nwbfile = NWBFile(
@@ -84,8 +93,6 @@ class TestHierarchicalBehavioralTable(TestCase):
             next_tier=[0, 1],
         )
 
-        paragraphs_hierarchical_dataframe = paragraphs_table.to_hierarchical_dataframe()
-
         self.nwbfile.add_time_intervals(self.words_table)
         self.nwbfile.add_time_intervals(self.sentences_table)
         self.nwbfile.add_time_intervals(paragraphs_table)
@@ -107,6 +114,6 @@ class TestHierarchicalBehavioralTable(TestCase):
             )
 
             assert_frame_equal(
-                paragraphs_hierarchical_dataframe,
+                paragraphs_table.to_hierarchical_dataframe(),
                 read_nwbfile.intervals["Paragraphs"].to_hierarchical_dataframe(),
             )
